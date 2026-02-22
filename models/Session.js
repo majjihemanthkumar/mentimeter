@@ -27,6 +27,8 @@ class Session {
             question: activity.question || '',
             options: activity.options || [],
             correctAnswer: activity.correctAnswer ?? null,
+            timeLimit: activity.type === 'quiz' ? 25 : 0, // 25 seconds for quizzes
+            launchedAt: null, // set when launched
             responses: [],
             words: [],
             questions: [],
@@ -84,7 +86,10 @@ class Session {
         if (index >= 0 && index < this.activities.length) {
             this.currentActivityIndex = index;
             const activity = this.getCurrentActivity();
-            if (activity) activity.isOpen = true;
+            if (activity) {
+                activity.isOpen = true;
+                activity.launchedAt = new Date();
+            }
             return activity;
         }
         return null;
@@ -100,7 +105,7 @@ class Session {
         return this.getPollResults(activityId);
     }
 
-    submitQuizAnswer(activityId, socketId, optionIndex, participantName) {
+    submitQuizAnswer(activityId, socketId, optionIndex, participantName, responseTimeMs) {
         const activity = this.getActivity(activityId);
         if (!activity || activity.type !== 'quiz') return null;
 
@@ -109,16 +114,30 @@ class Session {
         if (existing) return null;
 
         const isCorrect = optionIndex === activity.correctAnswer;
+        const timeLimit = activity.timeLimit || 25;
+
+        // Speed-based scoring: max 1000 points, decreasing with time
+        let score = 0;
+        if (isCorrect) {
+            const timeTaken = Math.min(responseTimeMs / 1000, timeLimit);
+            const timeRemaining = Math.max(0, timeLimit - timeTaken);
+            score = Math.round(1000 * (timeRemaining / timeLimit));
+            score = Math.max(score, 50); // minimum 50 points for correct answer
+        }
+
         activity.responses.push({
             socketId,
             optionIndex,
             participantName,
             isCorrect,
+            score,
+            responseTimeMs,
             time: new Date()
         });
 
         return {
             isCorrect,
+            score,
             results: this.getQuizResults(activityId)
         };
     }
@@ -194,15 +213,14 @@ class Session {
         const leaderboard = activity.responses.map(r => ({
             name: r.participantName,
             isCorrect: r.isCorrect,
+            score: r.score || 0,
+            responseTime: r.responseTimeMs ? (r.responseTimeMs / 1000).toFixed(1) + 's' : '?',
             answeredOption: activity.options[r.optionIndex] || '?',
             correctOption: activity.options[activity.correctAnswer] || '?',
             answeredAt: r.time
         }));
-        // Sort: correct first, then by time (fastest first)
-        leaderboard.sort((a, b) => {
-            if (a.isCorrect !== b.isCorrect) return b.isCorrect - a.isCorrect;
-            return new Date(a.answeredAt) - new Date(b.answeredAt);
-        });
+        // Sort by score (highest first), then by time (fastest first)
+        leaderboard.sort((a, b) => b.score - a.score || new Date(a.answeredAt) - new Date(b.answeredAt));
 
         return {
             activityId, type: 'quiz', question: activity.question,
@@ -273,17 +291,19 @@ class Session {
         this.activities.filter(a => a.type === 'quiz').forEach(activity => {
             activity.responses.forEach(r => {
                 if (!scoreMap[r.participantName]) {
-                    scoreMap[r.participantName] = { correct: 0, total: 0 };
+                    scoreMap[r.participantName] = { correct: 0, total: 0, totalScore: 0 };
                 }
                 scoreMap[r.participantName].total++;
+                scoreMap[r.participantName].totalScore += (r.score || 0);
                 if (r.isCorrect) scoreMap[r.participantName].correct++;
             });
         });
         const leaderboard = Object.entries(scoreMap).map(([name, data]) => ({
             name, correct: data.correct, total: data.total,
+            totalScore: data.totalScore,
             accuracy: data.total > 0 ? Math.round(data.correct / data.total * 100) : 0
         }));
-        leaderboard.sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy);
+        leaderboard.sort((a, b) => b.totalScore - a.totalScore || b.correct - a.correct);
         return leaderboard;
     }
 

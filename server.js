@@ -177,6 +177,7 @@ io.on('connection', (socket) => {
             type: activity.type,
             question: activity.question,
             options: activity.options,
+            timeLimit: activity.timeLimit || 0,
             isOpen: true
         });
 
@@ -187,6 +188,7 @@ io.on('connection', (socket) => {
                 type: activity.type,
                 question: activity.question,
                 options: activity.options,
+                timeLimit: activity.timeLimit || 0,
                 isOpen: true
             },
             session: session.toJSON()
@@ -235,7 +237,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ─── SUBMIT QUIZ ANSWER ───
     socket.on('submit-answer', (data) => {
         const session = getSession(data.code);
         if (!session) return;
@@ -245,7 +246,8 @@ io.on('connection', (socket) => {
             data.activityId,
             socket.id,
             data.optionIndex,
-            participant ? participant.name : 'Anonymous'
+            participant ? participant.name : 'Anonymous',
+            data.responseTimeMs || 25000
         );
 
         if (result) {
@@ -253,12 +255,13 @@ io.on('connection', (socket) => {
             const activity = session.getActivity(data.activityId);
             const correctOption = activity ? activity.options[activity.correctAnswer] : '';
 
-            // Tell the individual if they were correct + show correct answer
+            // Tell the individual: correct/wrong + show correct answer + their score
             socket.emit('quiz-feedback', {
                 isCorrect: result.isCorrect,
-                correctOption: correctOption
+                correctOption: correctOption,
+                score: result.score
             });
-            // Broadcast results to presenter
+            // Broadcast results to presenter only
             io.to(session.presenterSocketId).emit('quiz-results', result.results);
         }
     });
@@ -320,13 +323,22 @@ io.on('connection', (socket) => {
         session.isActive = false;
         const overallLeaderboard = session.getOverallLeaderboard();
 
-        // Send leaderboard to everyone
-        io.to(data.code).emit('session-ended', {
-            message: 'Session has ended. Thank you!',
-            leaderboard: overallLeaderboard
-        });
+        // Send session ended to audience WITHOUT leaderboard
+        // Leaderboard is only shown when presenter clicks 'Show Leaderboard'
+        socket.to(data.code).emit('session-ended', { message: 'Session has ended. Thank you!' });
+
         console.log(`✦ Session ${data.code} ended by presenter.`);
         callback({ success: true, leaderboard: overallLeaderboard });
+    });
+
+    // ─── SHOW LEADERBOARD (Presenter broadcasts to audience) ───
+    socket.on('show-leaderboard', (data) => {
+        const session = getSession(data.code);
+        if (!session || session.presenterSocketId !== socket.id) return;
+
+        const leaderboard = session.getOverallLeaderboard();
+        // Broadcast to all participants in the room
+        io.to(data.code).emit('leaderboard-reveal', { leaderboard });
     });
 
     // ─── CLOSE ACTIVITY ───

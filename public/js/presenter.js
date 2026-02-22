@@ -87,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateFormForType(type) {
-        // Reset form
         questionInput.value = '';
         const placeholders = {
             poll: 'Ask your audience something...',
@@ -97,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         questionInput.placeholder = placeholders[type] || '';
 
-        // Show/hide options
         if (type === 'wordcloud' || type === 'qa') {
             optionsContainer.classList.add('hidden');
         } else {
@@ -122,13 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="remove-option" title="Remove">×</button>
         `;
 
-        // Correct answer toggle
         div.querySelector('.correct-mark').addEventListener('click', (e) => {
             optionsList.querySelectorAll('.correct-mark').forEach(m => m.classList.remove('selected'));
             e.target.classList.add('selected');
         });
 
-        // Remove option
         div.querySelector('.remove-option').addEventListener('click', () => {
             if (optionsList.children.length > 2) {
                 div.remove();
@@ -148,6 +144,52 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Maximum 8 options allowed');
         }
     });
+
+    // ─── Load Preset Quiz ───
+    const loadPresetBtn = document.getElementById('loadPresetBtn');
+    if (loadPresetBtn) {
+        loadPresetBtn.addEventListener('click', () => {
+            if (!sessionCode) {
+                showToast('Create a session first!');
+                return;
+            }
+            if (!window.PRESET_QUIZZES || window.PRESET_QUIZZES.length === 0) {
+                showToast('No preset quizzes found');
+                return;
+            }
+
+            const quizzes = window.PRESET_QUIZZES;
+            let loaded = 0;
+            loadPresetBtn.disabled = true;
+            loadPresetBtn.textContent = '⏳ Loading...';
+
+            quizzes.forEach((q, i) => {
+                setTimeout(() => {
+                    socket.emit('add-activity', {
+                        code: sessionCode,
+                        type: 'quiz',
+                        question: q.question,
+                        options: q.options,
+                        correctAnswer: q.correctAnswer
+                    }, (res) => {
+                        loaded++;
+                        if (res.success) {
+                            activities = res.session.activities;
+                            renderActivityList();
+                        }
+                        if (loaded === quizzes.length) {
+                            loadPresetBtn.textContent = '✅ Loaded!';
+                            showToast(`${quizzes.length} quiz questions loaded! 🎉`);
+                            setTimeout(() => {
+                                loadPresetBtn.textContent = '📝 Load Preset Quiz (20 Qs)';
+                                loadPresetBtn.disabled = false;
+                            }, 3000);
+                        }
+                    });
+                }, i * 100); // slight delay to avoid overwhelming server
+            });
+        });
+    }
 
     // ─── Submit Activity ───
     activityForm.addEventListener('submit', (e) => {
@@ -227,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsType.textContent = getTypeLabel(activity.type);
         resultsQuestion.textContent = activity.question;
 
-        // Render based on type
         switch (activity.type) {
             case 'poll':
                 renderPollResults({ results: activity.options.map(o => ({ option: o, votes: 0 })), totalVotes: 0 });
@@ -268,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Quiz Results ───
     function renderQuizResults(data) {
-        const maxCount = Math.max(...data.results.map(r => r.count), 1);
         resultsContent.innerHTML = `
             <div class="poll-chart">
                 ${data.results.map(r => `
@@ -297,8 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
                                 </div>
                                 <div class="qa-content" style="flex:1;">
-                                    <div style="font-weight:600; font-size:0.95rem;">${escapeHtml(p.name)}</div>
-                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Answered: <strong style="color:${p.isCorrect ? '#22c55e' : '#ef4444'}">${escapeHtml(p.answeredOption)}</strong></div>
+                                    <div style="font-weight:600; font-size:0.95rem;">${escapeHtml(p.name)} <span style="color:var(--primary); font-size:0.85rem;">${p.score}pts</span></div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Answered: <strong style="color:${p.isCorrect ? '#22c55e' : '#ef4444'}">${escapeHtml(p.answeredOption)}</strong> • ${p.responseTime}</div>
                                 </div>
                                 <div style="font-size:1.4rem;">
                                     ${p.isCorrect ? '✅' : '❌'}
@@ -401,7 +441,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('Are you sure you want to end this session?')) {
             socket.emit('end-session', { code: sessionCode }, (res) => {
                 if (res.success) {
-                    // Show final leaderboard overlay
                     showFinalLeaderboard(res.leaderboard);
                 }
             });
@@ -412,12 +451,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.createElement('div');
         overlay.className = 'overlay';
         overlay.innerHTML = `
-            <div class="modal" style="max-width:550px; text-align:center;">
+            <div class="modal" style="max-width:600px; text-align:center;">
                 <div style="font-size:3rem; margin-bottom:12px;">🏆</div>
                 <h2 style="margin-bottom:20px;">Session Complete!</h2>
                 ${leaderboard && leaderboard.length > 0 ? `
                     <h3 style="margin-bottom:16px; font-size:1rem; color:var(--text-muted);">Overall Quiz Leaderboard</h3>
-                    <div class="qa-list" style="max-height:400px; overflow-y:auto; margin-bottom:24px; text-align:left;">
+                    <div class="qa-list" style="max-height:350px; overflow-y:auto; margin-bottom:20px; text-align:left;">
                         ${leaderboard.map((p, i) => `
                             <div class="qa-item" style="padding:14px 18px;">
                                 <div style="min-width:36px; font-size:1.2rem; font-weight:700; color:${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--text-muted)'}">
@@ -425,16 +464,75 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <div style="flex:1;">
                                     <div style="font-weight:600; font-size:0.95rem;">${escapeHtml(p.name)}</div>
-                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${p.correct}/${p.total} correct — ${p.accuracy}% accuracy</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">⭐ ${p.totalScore} pts — ${p.correct}/${p.total} correct (${p.accuracy}%)</div>
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" style="flex:1;" id="exportCSVBtn">📊 Export CSV</button>
+                        <button class="btn btn-secondary" style="flex:1;" id="exportPDFBtn">📄 Export PDF</button>
+                        <button class="btn btn-primary" style="flex:1;" id="showToAudienceBtn">📡 Show to Audience</button>
                     </div>
                 ` : '<p class="text-muted" style="margin-bottom:24px;">No quiz responses recorded.</p>'}
                 <a href="/" class="btn btn-primary btn-lg w-full">← Back to Home</a>
             </div>
         `;
         document.body.appendChild(overlay);
+
+        // Show leaderboard to audience
+        const showBtn = document.getElementById('showToAudienceBtn');
+        if (showBtn) {
+            showBtn.addEventListener('click', () => {
+                socket.emit('show-leaderboard', { code: sessionCode });
+                showToast('Leaderboard revealed to all participants! 📡');
+                showBtn.textContent = '✅ Shown!';
+                showBtn.disabled = true;
+            });
+        }
+
+        // Export as CSV
+        const csvBtn = document.getElementById('exportCSVBtn');
+        if (csvBtn) {
+            csvBtn.addEventListener('click', () => {
+                const headers = ['Rank', 'Name', 'Total Score', 'Correct', 'Total Questions', 'Accuracy (%)'];
+                const rows = leaderboard.map((p, i) => [i + 1, p.name, p.totalScore, p.correct, p.total, p.accuracy]);
+                let csv = headers.join(',') + '\n';
+                rows.forEach(row => { csv += row.map(v => '"' + v + '"').join(',') + '\n'; });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'incuXai_leaderboard_' + sessionCode + '.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('CSV downloaded! 📊');
+            });
+        }
+
+        // Export as PDF
+        const pdfBtn = document.getElementById('exportPDFBtn');
+        if (pdfBtn) {
+            pdfBtn.addEventListener('click', () => {
+                const pw = window.open('', '_blank');
+                pw.document.write('<html><head><title>incuXai Leaderboard</title>');
+                pw.document.write('<style>body{font-family:Segoe UI,Arial,sans-serif;padding:40px;color:#1a1a2e}h1{text-align:center;font-size:2rem;margin-bottom:8px}.sub{text-align:center;color:#666;margin-bottom:32px}table{width:100%;border-collapse:collapse;margin-top:20px}th{background:#6c5ce7;color:white;padding:14px 16px;text-align:left}td{padding:12px 16px;border-bottom:1px solid #e0e0e0}tr:nth-child(even){background:#f8f9fa}.rank{font-weight:700;font-size:1.1rem}.g{color:#f59e0b}.s{color:#94a3b8}.b{color:#cd7f32}.foot{text-align:center;margin-top:40px;color:#999;font-size:.8rem}</style>');
+                pw.document.write('</head><body>');
+                pw.document.write('<h1>🏆 incuXai Leaderboard</h1><p class="sub">Session: ' + sessionCode + '</p>');
+                pw.document.write('<table><thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Correct</th><th>Accuracy</th></tr></thead><tbody>');
+                leaderboard.forEach((p, i) => {
+                    const cls = i === 0 ? 'g' : i === 1 ? 's' : i === 2 ? 'b' : '';
+                    const medal = i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1);
+                    pw.document.write('<tr><td class="rank ' + cls + '">' + medal + '</td><td><strong>' + p.name + '</strong></td><td>' + p.totalScore + ' pts</td><td>' + p.correct + '/' + p.total + '</td><td>' + p.accuracy + '%</td></tr>');
+                });
+                pw.document.write('</tbody></table>');
+                pw.document.write('<p class="foot">Generated by incuXai | ' + new Date().toLocaleString() + '</p>');
+                pw.document.write('</body></html>');
+                pw.document.close();
+                pw.focus();
+                setTimeout(() => pw.print(), 500);
+            });
+        }
     }
 
     // ─── Socket Events ───
