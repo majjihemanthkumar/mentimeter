@@ -77,7 +77,8 @@ io.on('connection', (socket) => {
         // Notify presenter about new participant
         io.to(session.presenterSocketId).emit('participant-joined', {
             participantCount,
-            name: data.name || 'Anonymous'
+            name: data.name || 'Anonymous',
+            participants: session.getParticipantList()
         });
 
         // Send current activity to the new participant
@@ -344,7 +345,8 @@ io.on('connection', (socket) => {
             // Participant left
             const count = session.removeParticipant(socket.id);
             io.to(session.presenterSocketId).emit('participant-left', {
-                participantCount: count
+                participantCount: count,
+                participants: session.getParticipantList()
             });
         }
     });

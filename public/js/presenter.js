@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentType = 'poll';
     let activities = [];
     let currentActivityIndex = -1;
+    let participantNames = [];
 
     // ─── DOM Elements ───
     const createModal = document.getElementById('createModal');
@@ -56,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionCode = res.session.code;
                 roomCodeEl.textContent = sessionCode;
                 document.title = `LivePoll — ${name}`;
+
+                // Set dynamic join URL
+                const joinUrl = document.getElementById('joinUrl');
+                joinUrl.innerHTML = `Join at <strong>${window.location.host}</strong>`;
 
                 createModal.classList.add('hidden');
                 presenterLayout.classList.remove('hidden');
@@ -254,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="poll-bar-count">${r.votes}</div>
                     </div>
+                    ${r.voterNames && r.voterNames.length > 0 ? `<div class="voter-names" style="padding-left:156px;margin-top:-8px;margin-bottom:8px;font-size:0.8rem;color:var(--text-muted);">👤 ${r.voterNames.map(n => escapeHtml(n)).join(', ')}</div>` : ''}
                 `).join('')}
             </div>
             <p class="text-center text-muted mt-lg">${data.totalVotes} vote${data.totalVotes !== 1 ? 's' : ''}</p>
@@ -277,9 +283,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('')}
             </div>
-            <p class="text-center text-muted mt-lg">
+            <p class="text-center text-muted mt-md">
                 ${data.correctCount}/${data.totalAnswers} correct (${data.totalAnswers > 0 ? Math.round(data.correctCount / data.totalAnswers * 100) : 0}%)
             </p>
+            ${data.leaderboard && data.leaderboard.length > 0 ? `
+                <div style="margin-top:24px;">
+                    <h3 style="text-align:center; margin-bottom:8px; font-size:1.1rem;">🏆 Leaderboard</h3>
+                    ${data.correctOption ? `<p class="text-center" style="margin-bottom:16px; font-size:0.85rem; color:#22c55e;">✅ Correct Answer: <strong>${escapeHtml(data.correctOption)}</strong></p>` : ''}
+                    <div class="qa-list">
+                        ${data.leaderboard.map((p, i) => `
+                            <div class="qa-item" style="padding:14px 20px;">
+                                <div style="min-width:36px; font-size:1.2rem; font-weight:700; color:${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--text-muted)'}">
+                                    ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
+                                </div>
+                                <div class="qa-content" style="flex:1;">
+                                    <div style="font-weight:600; font-size:0.95rem;">${escapeHtml(p.name)}</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Answered: <strong style="color:${p.isCorrect ? '#22c55e' : '#ef4444'}">${escapeHtml(p.answeredOption)}</strong></div>
+                                </div>
+                                <div style="font-size:1.4rem;">
+                                    ${p.isCorrect ? '✅' : '❌'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
         `;
     }
 
@@ -383,12 +411,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Socket Events ───
     socket.on('participant-joined', (data) => {
         pCountEl.textContent = data.participantCount;
+        if (data.participants) {
+            participantNames = data.participants;
+            renderParticipantList();
+        }
         showToast(`${data.name} joined! 🎉`);
     });
 
     socket.on('participant-left', (data) => {
         pCountEl.textContent = data.participantCount;
+        if (data.participants) {
+            participantNames = data.participants;
+            renderParticipantList();
+        }
     });
+
+    function renderParticipantList() {
+        const list = document.getElementById('participantsList');
+        if (!list) return;
+        if (participantNames.length === 0) {
+            list.innerHTML = '<p class="text-sm text-muted" style="padding:8px;">No participants yet...</p>';
+            return;
+        }
+        list.innerHTML = participantNames.map(p => `
+            <div class="activity-item" style="cursor:default; padding:10px 14px;">
+                <span style="font-size:1.1rem;">👤</span>
+                <span class="activity-question" style="font-weight:500;">${escapeHtml(p.name)}</span>
+            </div>
+        `).join('');
+    }
 
     socket.on('poll-results', (data) => {
         renderPollResults(data);

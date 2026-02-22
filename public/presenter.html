@@ -53,7 +53,7 @@
             <div class="session-header">
                 <div class="room-code-label">Room Code</div>
                 <div class="room-code-display" id="roomCode" title="Click to copy">------</div>
-                <div class="text-sm text-muted">Join at <strong>localhost:3000</strong></div>
+                <div class="text-sm text-muted" id="joinUrl">Join at <strong></strong></div>
             </div>
 
             <!-- Activity Creation Tabs -->
@@ -103,6 +103,15 @@
                     style="text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Activities</div>
                 <div class="activity-list" id="activityList">
                     <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Participants Panel -->
+            <div>
+                <div class="text-sm text-muted"
+                    style="text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">👥 Participants</div>
+                <div class="activity-list" id="participantsList">
+                    <p class="text-sm text-muted" style="padding:8px;">No participants yet...</p>
                 </div>
             </div>
         </aside>

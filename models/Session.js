@@ -168,10 +168,14 @@ class Session {
         const activity = this.getActivity(activityId);
         if (!activity) return null;
 
-        const results = activity.options.map((opt, i) => ({
-            option: opt,
-            votes: activity.responses.filter(r => r.optionIndex === i).length
-        }));
+        const results = activity.options.map((opt, i) => {
+            const voters = activity.responses.filter(r => r.optionIndex === i);
+            return {
+                option: opt,
+                votes: voters.length,
+                voterNames: voters.map(v => v.participantName)
+            };
+        });
         return { activityId, type: 'poll', question: activity.question, results, totalVotes: activity.responses.length };
     }
 
@@ -185,10 +189,27 @@ class Session {
             isCorrect: i === activity.correctAnswer
         }));
         const correctCount = activity.responses.filter(r => r.isCorrect).length;
+
+        // Build leaderboard for this quiz
+        const leaderboard = activity.responses.map(r => ({
+            name: r.participantName,
+            isCorrect: r.isCorrect,
+            answeredOption: activity.options[r.optionIndex] || '?',
+            correctOption: activity.options[activity.correctAnswer] || '?',
+            answeredAt: r.time
+        }));
+        // Sort: correct first, then by time (fastest first)
+        leaderboard.sort((a, b) => {
+            if (a.isCorrect !== b.isCorrect) return b.isCorrect - a.isCorrect;
+            return new Date(a.answeredAt) - new Date(b.answeredAt);
+        });
+
         return {
             activityId, type: 'quiz', question: activity.question,
             results, totalAnswers: activity.responses.length,
-            correctCount, correctAnswer: activity.correctAnswer
+            correctCount, correctAnswer: activity.correctAnswer,
+            correctOption: activity.options[activity.correctAnswer] || '?',
+            leaderboard
         };
     }
 
@@ -226,7 +247,7 @@ class Session {
     }
 
     addParticipant(socketId, name) {
-        this.participants.set(socketId, { id: socketId, name: name || 'Anonymous' });
+        this.participants.set(socketId, { id: socketId, name: name || 'Anonymous', joinedAt: new Date() });
         return this.participants.size;
     }
 
@@ -237,6 +258,33 @@ class Session {
 
     getParticipantCount() {
         return this.participants.size;
+    }
+
+    getParticipantList() {
+        return Array.from(this.participants.values()).map(p => ({
+            name: p.name,
+            joinedAt: p.joinedAt
+        }));
+    }
+
+    getOverallLeaderboard() {
+        // Aggregate scores across all quiz activities
+        const scoreMap = {};
+        this.activities.filter(a => a.type === 'quiz').forEach(activity => {
+            activity.responses.forEach(r => {
+                if (!scoreMap[r.participantName]) {
+                    scoreMap[r.participantName] = { correct: 0, total: 0 };
+                }
+                scoreMap[r.participantName].total++;
+                if (r.isCorrect) scoreMap[r.participantName].correct++;
+            });
+        });
+        const leaderboard = Object.entries(scoreMap).map(([name, data]) => ({
+            name, correct: data.correct, total: data.total,
+            accuracy: data.total > 0 ? Math.round(data.correct / data.total * 100) : 0
+        }));
+        leaderboard.sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy);
+        return leaderboard;
     }
 
     toJSON() {
