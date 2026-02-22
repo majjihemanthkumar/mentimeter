@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LivePoll — Join Session</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+
+<body>
+    <div class="bg-animated"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <div class="logo-icon">📊</div>
+            <span>Live<span class="text-gradient">Poll</span></span>
+        </a>
+        <div class="nav-actions">
+            <span class="text-sm text-muted" id="sessionNameDisplay"></span>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Audience Container -->
+    <div class="audience-container">
+        <!-- Waiting State (default) -->
+        <div class="audience-card" id="waitingState">
+            <div class="waiting-state">
+                <div class="waiting-icon">⏳</div>
+                <h2>Waiting for the presenter...</h2>
+                <p>The next activity will appear here automatically.</p>
+            </div>
+        </div>
+
+        <!-- Activity Area (updated dynamically) -->
+        <div class="audience-card hidden" id="activityArea">
+            <h2 class="audience-question" id="audienceQuestion"></h2>
+            <div id="audienceContent"></div>
+        </div>
+
+        <!-- Submitted State -->
+        <div class="audience-card hidden" id="submittedState">
+            <div class="submit-success">
+                <div class="check-icon">✓</div>
+                <h2>Response Submitted!</h2>
+                <p class="text-muted">Waiting for the next activity...</p>
+            </div>
+        </div>
+
+        <!-- Quiz Feedback -->
+        <div class="audience-card hidden" id="quizFeedback">
+            <div class="submit-success">
+                <div class="check-icon" id="quizFeedbackIcon">✓</div>
+                <h2 id="quizFeedbackText">Correct!</h2>
+                <p class="text-muted">Waiting for the next question...</p>
+            </div>
+        </div>
+
+        <!-- Session Ended -->
+        <div class="audience-card hidden" id="sessionEnded">
+            <div class="session-ended">
+                <div class="ended-icon">🎉</div>
+                <h2>Session Ended</h2>
+                <p class="text-muted mb-md">Thanks for participating!</p>
+                <a href="/" class="btn btn-primary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/audience.js"></script>
+</body>
+
+</html>

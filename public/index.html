@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LivePoll — Free interactive presentation platform. Create polls, quizzes, word clouds, and Q&A sessions in real-time.">
+    <title>LivePoll — Interactive Presentations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animated"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <div class="logo-icon">📊</div>
+            <span>Live<span class="text-gradient">Poll</span></span>
+        </a>
+        <div class="nav-actions">
+            <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Make Presentations <br><span class="text-gradient">Interactive</span></h1>
+        <p>Create live polls, quizzes, word clouds, and Q&A sessions. Your audience participates in real-time from any device. Completely free.</p>
+
+        <div class="hero-actions">
+            <a href="presenter.html" class="btn btn-primary btn-lg">🚀 Create Presentation</a>
+            <button class="btn btn-secondary btn-lg" id="joinBtn">🔗 Join with Code</button>
+        </div>
+
+        <!-- Join Section (hidden by default) -->
+        <div class="join-section hidden" id="joinSection">
+            <div class="join-card">
+                <h2>Join a Session</h2>
+                <p>Enter the 6-digit code shown on the presenter's screen</p>
+                <form id="joinForm">
+                    <input type="text" class="input input-code" id="joinCode" placeholder="000000" maxlength="6" pattern="\d{6}" inputmode="numeric" required>
+                    <div class="input-group mt-md">
+                        <input type="text" class="input" id="joinName" placeholder="Your name (optional)">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-full mt-md">Join Session →</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2 class="features-title">Everything You Need, <span class="text-gradient">Completely Free</span></h2>
+        <div class="features-grid">
+            <div class="card feature-card">
+                <div class="feature-icon">🗳️</div>
+                <h3>Live Polls</h3>
+                <p>Create multiple-choice polls and see votes stream in real-time with animated charts.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>Quizzes</h3>
+                <p>Test knowledge with timed quizzes. Track correct answers and see leaderboards.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3>Word Clouds</h3>
+                <p>Collect words and ideas from your audience. Watch them form a beautiful word cloud.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">❓</div>
+                <h3>Q&A</h3>
+                <p>Let your audience ask questions. They can upvote to surface the most popular ones.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align:center; padding:40px 24px; color:var(--text-muted); font-size:0.85rem;">
+        <p>LivePoll — Free & Open Source Interactive Presentations</p>
+    </footer>
+
+    <script src="js/landing.js"></script>
+</body>
+</html>

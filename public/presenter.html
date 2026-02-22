@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LivePoll — Presenter Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+
+<body>
+    <div class="bg-animated"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <div class="logo-icon">📊</div>
+            <span>Live<span class="text-gradient">Poll</span></span>
+        </a>
+        <div class="nav-actions">
+            <div class="participant-count" id="participantCount">
+                <span class="dot"></span>
+                <span id="pCount">0</span> participants
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌙</button>
+            <button class="btn btn-danger btn-sm" id="endSessionBtn">End Session</button>
+        </div>
+    </nav>
+
+    <!-- Create Session Modal (shown on load) -->
+    <div class="overlay" id="createModal">
+        <div class="modal">
+            <h2>🚀 Create New Session</h2>
+            <p class="text-muted mb-md">Give your presentation a name to get started.</p>
+            <form id="createForm">
+                <div class="input-group">
+                    <label>Session Name</label>
+                    <input type="text" class="input" id="sessionName" placeholder="e.g., Team Standup, Class Quiz..."
+                        required autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-full mt-lg">Create Session →</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Presenter Layout -->
+    <div class="presenter-layout hidden" id="presenterLayout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Session Info -->
+            <div class="session-header">
+                <div class="room-code-label">Room Code</div>
+                <div class="room-code-display" id="roomCode" title="Click to copy">------</div>
+                <div class="text-sm text-muted">Join at <strong>localhost:3000</strong></div>
+            </div>
+
+            <!-- Activity Creation Tabs -->
+            <div class="activity-tabs">
+                <button class="tab-btn active" data-type="poll">🗳️ Poll</button>
+                <button class="tab-btn" data-type="quiz">🧠 Quiz</button>
+                <button class="tab-btn" data-type="wordcloud">☁️ Cloud</button>
+                <button class="tab-btn" data-type="qa">❓ Q&A</button>
+            </div>
+
+            <!-- Activity Form -->
+            <div id="activityFormContainer">
+                <!-- Poll Form (default) -->
+                <form class="activity-form" id="activityForm">
+                    <div class="input-group">
+                        <label>Question</label>
+                        <input type="text" class="input" id="questionInput" placeholder="Ask your audience something..."
+                            required>
+                    </div>
+
+                    <div id="optionsContainer">
+                        <label class="text-sm text-muted"
+                            style="text-transform:uppercase; letter-spacing:0.5px;">Options</label>
+                        <div class="options-list" id="optionsList">
+                            <div class="option-row">
+                                <input type="text" class="input" placeholder="Option 1" required>
+                                <button type="button" class="correct-mark hidden" title="Mark as correct">✓</button>
+                                <button type="button" class="remove-option hidden" title="Remove">×</button>
+                            </div>
+                            <div class="option-row">
+                                <input type="text" class="input" placeholder="Option 2" required>
+                                <button type="button" class="correct-mark hidden" title="Mark as correct">✓</button>
+                                <button type="button" class="remove-option hidden" title="Remove">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-sm" id="addOptionBtn">+ Add
+                            Option</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-full">Add Activity</button>
+                </form>
+            </div>
+
+            <!-- Activity List -->
+            <div>
+                <div class="text-sm text-muted"
+                    style="text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Activities</div>
+                <div class="activity-list" id="activityList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- Empty State (default) -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📋</div>
+                <h3>No Active Activity</h3>
+                <p class="text-muted">Create an activity from the sidebar, then click on it to launch it to your
+                    audience.</p>
+            </div>
+
+            <!-- Results Container (hidden initially) -->
+            <div class="results-container hidden" id="resultsContainer">
+                <div class="results-header">
+                    <div class="results-type" id="resultsType"></div>
+                    <h2 id="resultsQuestion"></h2>
+                </div>
+                <div id="resultsContent"></div>
+                <div class="session-controls">
+                    <button class="btn btn-secondary" id="prevBtn" title="Previous">← Prev</button>
+                    <button class="btn btn-primary" id="nextBtn" title="Next">Next →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/presenter.js"></script>
+</body>
+
+</html>

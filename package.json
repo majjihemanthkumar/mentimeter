@@ -1,0 +1,25 @@
+{
+  "name": "livepoll",
+  "version": "1.0.0",
+  "description": "LivePoll — Free Interactive Presentation Platform (Mentimeter Alternative)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "poll",
+    "quiz",
+    "interactive",
+    "presentation",
+    "mentimeter"
+  ],
+  "author": "LivePoll",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "uuid": "^13.0.0"
+  }
+}
