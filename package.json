@@ -1,7 +1,7 @@
 {
-    "name": "livepoll",
+    "name": "incuxai",
     "version": "1.0.0",
-    "description": "LivePoll — Free Interactive Presentation Platform (Mentimeter Alternative)",
+    "description": "incuXai — Free Interactive Presentation Platform",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -14,7 +14,7 @@
         "presentation",
         "mentimeter"
     ],
-    "author": "LivePoll",
+    "author": "incuXai",
     "license": "MIT",
     "engines": {
         "node": ">=18.0.0"

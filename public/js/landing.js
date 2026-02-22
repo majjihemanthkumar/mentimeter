@@ -45,14 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (!name) {
+            showToast('Please enter your name to join');
+            document.getElementById('joinName').focus();
+            return;
+        }
+
         // Check if session exists via API
         try {
             const res = await fetch(`/api/session/${code}`);
             const data = await res.json();
 
             if (data.exists) {
-                const nameParam = name ? `&name=${encodeURIComponent(name)}` : '';
-                window.location.href = `audience.html?code=${code}${nameParam}`;
+                window.location.href = `audience.html?code=${code}&name=${encodeURIComponent(name)}`;
             } else {
                 showToast('Session not found. Check your code and try again.');
             }

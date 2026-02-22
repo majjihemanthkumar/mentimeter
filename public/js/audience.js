@@ -7,9 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Get URL Params ───
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    const name = params.get('name') || 'Anonymous';
+    const name = params.get('name');
 
-    if (!code) {
+    // Name is mandatory — redirect if missing
+    if (!code || !name) {
         window.location.href = '/';
         return;
     }
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         sessionNameDisplay.textContent = res.sessionName;
-        document.title = `LivePoll — ${res.sessionName}`;
+        document.title = `incuXai — ${res.sessionName}`;
 
         if (res.currentActivity) {
             showActivity(res.currentActivity);
@@ -260,15 +261,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const icon = document.getElementById('quizFeedbackIcon');
         const text = document.getElementById('quizFeedbackText');
+        const correctAnswerEl = document.getElementById('quizCorrectAnswer');
 
         if (data.isCorrect) {
             icon.textContent = '✅';
             icon.style.background = 'rgba(34, 197, 94, 0.15)';
             text.textContent = 'Correct! 🎉';
+            correctAnswerEl.innerHTML = `<strong style="color:#22c55e;">✅ ${escapeHtml(data.correctOption)}</strong>`;
         } else {
             icon.textContent = '❌';
             icon.style.background = 'rgba(239, 68, 68, 0.15)';
-            text.textContent = 'Not quite right';
+            text.textContent = 'Wrong Answer!';
+            correctAnswerEl.innerHTML = `The correct answer was: <strong style="color:#22c55e;">${escapeHtml(data.correctOption)}</strong>`;
         }
     });
 
@@ -304,10 +308,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Session ended
-    socket.on('session-ended', () => {
+    // Session ended — show final leaderboard
+    socket.on('session-ended', (data) => {
         hideAll();
         sessionEnded.classList.remove('hidden');
+
+        const leaderboardEl = document.getElementById('finalLeaderboard');
+        if (data && data.leaderboard && data.leaderboard.length > 0) {
+            leaderboardEl.innerHTML = `
+                <h3 style="margin:20px 0 12px; font-size:1.1rem;">🏆 Final Leaderboard</h3>
+                <div class="qa-list" style="margin-bottom:20px; text-align:left;">
+                    ${data.leaderboard.map((p, i) => `
+                        <div class="qa-item" style="padding:12px 16px;">
+                            <div style="min-width:32px; font-size:1.1rem; font-weight:700; color:${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--text-muted)'}">
+                                ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600;">${escapeHtml(p.name)}</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">${p.correct}/${p.total} correct (${p.accuracy}%)</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
     });
 
     // Presenter disconnected

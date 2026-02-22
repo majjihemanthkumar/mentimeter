@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LivePoll — Join Session</title>
+    <title>incuXai — Join Session</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
 
 <body>
@@ -16,8 +16,8 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="/" class="nav-logo">
-            <div class="logo-icon">📊</div>
-            <span>Live<span class="text-gradient">Poll</span></span>
+            <div class="logo-icon">🧠</div>
+            <span>incu<span class="text-gradient">Xai</span></span>
         </a>
         <div class="nav-actions">
             <span class="text-sm text-muted" id="sessionNameDisplay"></span>
@@ -56,15 +56,17 @@
             <div class="submit-success">
                 <div class="check-icon" id="quizFeedbackIcon">✓</div>
                 <h2 id="quizFeedbackText">Correct!</h2>
+                <p class="text-muted" id="quizCorrectAnswer"></p>
                 <p class="text-muted">Waiting for the next question...</p>
             </div>
         </div>
 
-        <!-- Session Ended -->
+        <!-- Session Ended (with leaderboard) -->
         <div class="audience-card hidden" id="sessionEnded">
             <div class="session-ended">
                 <div class="ended-icon">🎉</div>
                 <h2>Session Ended</h2>
+                <div id="finalLeaderboard"></div>
                 <p class="text-muted mb-md">Thanks for participating!</p>
                 <a href="/" class="btn btn-primary">Back to Home</a>
             </div>

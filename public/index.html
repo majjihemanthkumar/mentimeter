@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="LivePoll — Free interactive presentation platform. Create polls, quizzes, word clouds, and Q&A sessions in real-time.">
-    <title>LivePoll — Interactive Presentations</title>
+    <meta name="description"
+        content="incuXai — Free interactive presentation platform. Create polls, quizzes, word clouds, and Q&A sessions in real-time.">
+    <title>incuXai — Interactive Presentations</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
+
 <body>
     <!-- Animated Background -->
     <div class="bg-animated"></div>
@@ -15,8 +19,8 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="/" class="nav-logo">
-            <div class="logo-icon">📊</div>
-            <span>Live<span class="text-gradient">Poll</span></span>
+            <div class="logo-icon">🧠</div>
+            <span>incu<span class="text-gradient">Xai</span></span>
         </a>
         <div class="nav-actions">
             <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌙</button>
@@ -26,7 +30,8 @@
     <!-- Hero Section -->
     <section class="hero">
         <h1>Make Presentations <br><span class="text-gradient">Interactive</span></h1>
-        <p>Create live polls, quizzes, word clouds, and Q&A sessions. Your audience participates in real-time from any device. Completely free.</p>
+        <p>Create live polls, quizzes, word clouds, and Q&A sessions. Your audience participates in real-time from any
+            device. Completely free. Unlimited participants.</p>
 
         <div class="hero-actions">
             <a href="presenter.html" class="btn btn-primary btn-lg">🚀 Create Presentation</a>
@@ -39,9 +44,12 @@
                 <h2>Join a Session</h2>
                 <p>Enter the 6-digit code shown on the presenter's screen</p>
                 <form id="joinForm">
-                    <input type="text" class="input input-code" id="joinCode" placeholder="000000" maxlength="6" pattern="\d{6}" inputmode="numeric" required>
+                    <input type="text" class="input input-code" id="joinCode" placeholder="000000" maxlength="6"
+                        pattern="\d{6}" inputmode="numeric" required>
                     <div class="input-group mt-md">
-                        <input type="text" class="input" id="joinName" placeholder="Your name (optional)">
+                        <label style="font-weight:600; margin-bottom:4px;">Your Name <span
+                                style="color:#ef4444;">*</span></label>
+                        <input type="text" class="input" id="joinName" placeholder="Enter your name" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-full mt-md">Join Session →</button>
                 </form>
@@ -78,9 +86,10 @@
 
     <!-- Footer -->
     <footer style="text-align:center; padding:40px 24px; color:var(--text-muted); font-size:0.85rem;">
-        <p>LivePoll — Free & Open Source Interactive Presentations</p>
+        <p>incuXai — Free & Open Source Interactive Presentations</p>
     </footer>
 
     <script src="js/landing.js"></script>
 </body>
+
 </html>

@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.success) {
                 sessionCode = res.session.code;
                 roomCodeEl.textContent = sessionCode;
-                document.title = `LivePoll — ${name}`;
+                document.title = `incuXai — ${name}`;
 
                 // Set dynamic join URL
                 const joinUrl = document.getElementById('joinUrl');
@@ -401,12 +401,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('Are you sure you want to end this session?')) {
             socket.emit('end-session', { code: sessionCode }, (res) => {
                 if (res.success) {
-                    showToast('Session ended');
-                    setTimeout(() => window.location.href = '/', 1500);
+                    // Show final leaderboard overlay
+                    showFinalLeaderboard(res.leaderboard);
                 }
             });
         }
     });
+
+    function showFinalLeaderboard(leaderboard) {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.innerHTML = `
+            <div class="modal" style="max-width:550px; text-align:center;">
+                <div style="font-size:3rem; margin-bottom:12px;">🏆</div>
+                <h2 style="margin-bottom:20px;">Session Complete!</h2>
+                ${leaderboard && leaderboard.length > 0 ? `
+                    <h3 style="margin-bottom:16px; font-size:1rem; color:var(--text-muted);">Overall Quiz Leaderboard</h3>
+                    <div class="qa-list" style="max-height:400px; overflow-y:auto; margin-bottom:24px; text-align:left;">
+                        ${leaderboard.map((p, i) => `
+                            <div class="qa-item" style="padding:14px 18px;">
+                                <div style="min-width:36px; font-size:1.2rem; font-weight:700; color:${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--text-muted)'}">
+                                    ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600; font-size:0.95rem;">${escapeHtml(p.name)}</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${p.correct}/${p.total} correct — ${p.accuracy}% accuracy</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p class="text-muted" style="margin-bottom:24px;">No quiz responses recorded.</p>'}
+                <a href="/" class="btn btn-primary btn-lg w-full">← Back to Home</a>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
 
     // ─── Socket Events ───
     socket.on('participant-joined', (data) => {

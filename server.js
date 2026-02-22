@@ -249,8 +249,15 @@ io.on('connection', (socket) => {
         );
 
         if (result) {
-            // Tell the individual if they were correct
-            socket.emit('quiz-feedback', { isCorrect: result.isCorrect });
+            // Get the correct answer option text
+            const activity = session.getActivity(data.activityId);
+            const correctOption = activity ? activity.options[activity.correctAnswer] : '';
+
+            // Tell the individual if they were correct + show correct answer
+            socket.emit('quiz-feedback', {
+                isCorrect: result.isCorrect,
+                correctOption: correctOption
+            });
             // Broadcast results to presenter
             io.to(session.presenterSocketId).emit('quiz-results', result.results);
         }
@@ -311,9 +318,15 @@ io.on('connection', (socket) => {
         }
 
         session.isActive = false;
-        io.to(data.code).emit('session-ended', { message: 'Session has ended. Thank you!' });
+        const overallLeaderboard = session.getOverallLeaderboard();
+
+        // Send leaderboard to everyone
+        io.to(data.code).emit('session-ended', {
+            message: 'Session has ended. Thank you!',
+            leaderboard: overallLeaderboard
+        });
         console.log(`✦ Session ${data.code} ended by presenter.`);
-        callback({ success: true });
+        callback({ success: true, leaderboard: overallLeaderboard });
     });
 
     // ─── CLOSE ACTIVITY ───
