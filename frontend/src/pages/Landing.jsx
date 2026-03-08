@@ -11,7 +11,7 @@ const Landing = () => {
     const features = [
         { icon: Zap, title: 'Instant Delivery', desc: 'Real-time updates as participants respond.', color: 'text-yellow-500' },
         { icon: Users, title: 'Massive Scale', desc: 'Support for thousands of concurrent users.', color: 'text-blue-500' },
-        { icon: shield, title: 'Secure & Private', desc: 'Enterprise-grade security for your data.', color: 'text-green-500' },
+        { icon: Shield, title: 'Secure & Private', desc: 'Enterprise-grade security for your data.', color: 'text-green-500' },
     ];
 
     return (
