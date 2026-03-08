@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-textPrimary font-sans;
+}
+
+.clay-card {
+  @apply bg-card shadow-clay rounded-clay border border-white/50;
+}
+
+.clay-button {
+  @apply shadow-clay rounded-clay transition-all duration-300 active:scale-95;
+}
