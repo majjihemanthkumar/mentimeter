@@ -66,7 +66,7 @@ const Landing = () => {
                     <ClayButton
                         variant="primary"
                         className="px-10 py-5 text-lg"
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() => navigate('/login')}
                     >
                         Create Presentation <Rocket size={20} className="ml-2" />
                     </ClayButton>

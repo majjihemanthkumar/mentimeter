@@ -14,9 +14,29 @@ import DashboardCard from '../components/DashboardCard';
 import SessionList from '../components/SessionList';
 import ClayButton from '../components/ClayButton';
 import ClayCard from '../components/ClayCard';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const handleNewSession = async () => {
+        try {
+            const res = await fetch('/api/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: 'New Interactive Session' })
+            });
+            const data = await res.json();
+            if (data.session) {
+                navigate(`/presenter/${data.session.code}`);
+            }
+        } catch (err) {
+            console.error('Failed to create session:', err);
+            // Fallback for demo
+            navigate('/presenter/DEFAULT');
+        }
+    };
 
     const stats = [
         {
@@ -130,7 +150,11 @@ const Dashboard = () => {
                         <ClayCard>
                             <h3 className="text-lg font-bold text-textPrimary mb-6">Quick Actions</h3>
                             <div className="grid grid-cols-1 gap-4">
-                                <ClayButton variant="primary" className="w-full py-4 text-sm">
+                                <ClayButton
+                                    variant="primary"
+                                    className="w-full py-4 text-sm"
+                                    onClick={handleNewSession}
+                                >
                                     <Plus size={18} /> New Session
                                 </ClayButton>
                                 <ClayButton variant="secondary" className="w-full py-4 text-sm">
